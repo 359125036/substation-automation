@@ -13,5 +13,8 @@
         <module name="substation-service" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="generator" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>
