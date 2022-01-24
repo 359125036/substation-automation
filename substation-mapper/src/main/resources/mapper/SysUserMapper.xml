@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.substation.mapper.SysUserMapper" >
+  <resultMap id="BaseResultMap" type="com.substation.entity.system.SysUser" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="user_id" property="userId" jdbcType="BIGINT" />
+    <result column="dept_id" property="deptId" jdbcType="BIGINT" />
+    <result column="user_name" property="userName" jdbcType="VARCHAR" />
+    <result column="nick_name" property="nickName" jdbcType="VARCHAR" />
+    <result column="user_type" property="userType" jdbcType="VARCHAR" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+    <result column="phone_number" property="phoneNumber" jdbcType="VARCHAR" />
+    <result column="sex" property="sex" jdbcType="CHAR" />
+    <result column="avatar" property="avatar" jdbcType="VARCHAR" />
+    <result column="password" property="password" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="CHAR" />
+    <result column="del_flag" property="delFlag" jdbcType="CHAR" />
+    <result column="login_ip" property="loginIp" jdbcType="VARCHAR" />
+    <result column="login_date" property="loginDate" jdbcType="TIMESTAMP" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_by" property="updateBy" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <resultMap type="SysUser" id="SysUserResult">
+    <id     property="userId"       column="user_id"      />
+    <result property="deptId"       column="dept_id"      />
+    <result property="userName"     column="user_name"    />
+    <result property="nickName"     column="nick_name"    />
+    <result property="email"        column="email"        />
+    <result property="phoneNumber"  column="phone_number"  />
+    <result property="sex"          column="sex"          />
+    <result property="avatar"       column="avatar"       />
+    <result property="password"     column="password"     />
+    <result property="status"       column="status"       />
+    <result property="delFlag"      column="del_flag"     />
+    <result property="loginIp"      column="login_ip"     />
+    <result property="loginDate"    column="login_date"   />
+    <result property="createBy"     column="create_by"    />
+    <result property="createTime"   column="create_time"  />
+    <result property="updateBy"     column="update_by"    />
+    <result property="updateTime"   column="update_time"  />
+    <result property="remark"       column="remark"       />
+    <!--<association property="dept"    column="dept_id" javaType="SysDept" resultMap="deptResult" />-->
+    <!--<collection  property="roles"   javaType="java.util.List"        resultMap="RoleResult" />-->
+  </resultMap>
+
+
+  <select id="selectUserList" parameterType="SysUser" resultMap="SysUserResult">
+    select u.user_id, u.dept_id, u.nick_name, u.user_name, u.email, u.avatar, u.phone_number, u.password, u.sex, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark, d.dept_name, d.leader from sys_user u
+    left join sys_dept d on u.dept_id = d.dept_id
+    where u.del_flag = '0'
+    <if test="userName != null and userName != ''">
+      AND u.user_name like concat('%', #{userName}, '%')
+    </if>
+    <if test="status != null and status != ''">
+      AND u.status = #{status}
+    </if>
+    <if test="phoneNumber != null and phoneNumber != ''">
+      AND u.phone_number like concat('%', #{phoneNumber}, '%')
+    </if>
+    <if test="beginTime != null and beginTime != ''"><!-- 开始时间检索 -->
+      AND date_format(u.create_time,'%y%m%d') &gt;= date_format(#{beginTime},'%y%m%d')
+    </if>
+    <if test="endTime != null and endTime != ''"><!-- 结束时间检索 -->
+      AND date_format(u.create_time,'%y%m%d') &lt;= date_format(#{endTime},'%y%m%d')
+    </if>
+    <if test="deptId != null and deptId != 0">
+      AND (u.dept_id = #{deptId} OR u.dept_id IN ( SELECT t.dept_id FROM sys_dept t WHERE FIND_IN_SET (#{deptId},ancestors) ))
+    </if>
+  </select>
+
+
+  <delete id="deleteUserByIds" parameterType="Long">
+    update sys_user set del_flag = '2' where user_id in
+    <foreach collection="array" item="userId" open="(" separator="," close=")">
+      #{userId}
+    </foreach>
+  </delete>
+</mapper>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.substation.mapper.SysDeptMapper" >
+  <resultMap id="BaseResultMap" type="com.substation.entity.system.SysDept" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="dept_id" property="deptId" jdbcType="BIGINT" />
+    <result column="parent_id" property="parentId" jdbcType="BIGINT" />
+    <result column="ancestors" property="ancestors" jdbcType="VARCHAR" />
+    <result column="dept_name" property="deptName" jdbcType="VARCHAR" />
+    <result column="order_num" property="orderNum" jdbcType="INTEGER" />
+    <result column="leader" property="leader" jdbcType="VARCHAR" />
+    <result column="phone" property="phone" jdbcType="VARCHAR" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="CHAR" />
+    <result column="del_flag" property="delFlag" jdbcType="CHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_by" property="updateBy" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <sql id="selectDeptVo">
+        select d.dept_id, d.parent_id, d.ancestors, d.dept_name, d.order_num, d.leader, d.phone, d.email, d.status, d.del_flag, d.create_by, d.create_time
+        from sys_dept d
+    </sql>
+
+  <select id="selectDeptList" parameterType="SysDept" resultMap="BaseResultMap">
+    <include refid="selectDeptVo"/>
+    where d.del_flag = '0'
+    <if test="parentId != null and parentId != 0">
+      AND parent_id = #{parentId}
+    </if>
+    <if test="deptName != null and deptName != ''">
+      AND dept_name like concat('%', #{deptName}, '%')
+    </if>
+    <if test="status != null and status != ''">
+      AND status = #{status}
+    </if>
+    <!-- 数据范围过滤 -->
+
+    order by d.parent_id, d.order_num
+  </select>
+
+<!--检查部门是否有用户-->
+  <select id="checkDeptExistUser" parameterType="Long" resultType="int">
+		select count(1) from sys_user where dept_id = #{deptId} and del_flag = '0'
+	</select>
+
+  <!--查询部门是否包含正常子部门-->
+  <select id="selectNormalChildrenDeptById" parameterType="Long" resultType="int">
+		select count(*) from sys_dept where status = 0 and del_flag = '0' and find_in_set(#{deptId}, ancestors)
+	</select>
+
+  <!--更新子部门-->
+  <update id="updateDeptChildren" parameterType="java.util.List">
+    update sys_dept set ancestors =
+    <foreach collection="depts" item="item" index="index"
+             separator=" " open="case dept_id" close="end">
+      when #{item.deptId} then #{item.ancestors}
+    </foreach>
+    where dept_id in
+    <foreach collection="depts" item="item" index="index"
+             separator="," open="(" close=")">
+      #{item.deptId}
+    </foreach>
+  </update>
+<!--更新部门状态-->
+  <update id="updateDeptStatus" parameterType="SysDept">
+    update sys_dept
+    <set>
+      <if test="status != null and status != ''">status = #{status},</if>
+      <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+      update_time = sysdate()
+    </set>
+    where dept_id in (${ancestors})
+  </update>
+
+  <select id="selectChildrenDeptById" parameterType="Long" resultMap="BaseResultMap">
+		select * from sys_dept where find_in_set(#{deptId}, ancestors)
+	</select>
+</mapper>

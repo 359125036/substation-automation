@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.substation.mapper.SysDictDataMapper" >
+  <resultMap id="BaseResultMap" type="com.substation.entity.system.SysDictData" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="dict_code" property="dictCode" jdbcType="BIGINT" />
+    <result column="dict_sort" property="dictSort" jdbcType="INTEGER" />
+    <result column="dict_label" property="dictLabel" jdbcType="VARCHAR" />
+    <result column="dict_value" property="dictValue" jdbcType="VARCHAR" />
+    <result column="dict_type" property="dictType" jdbcType="VARCHAR" />
+    <result column="css_class" property="cssClass" jdbcType="VARCHAR" />
+    <result column="list_class" property="listClass" jdbcType="VARCHAR" />
+    <result column="is_default" property="isDefault" jdbcType="CHAR" />
+    <result column="status" property="status" jdbcType="CHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_by" property="updateBy" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+
+
+  <sql id="selectDictDataVo">
+        select dict_code, dict_sort, dict_label, dict_value, dict_type, css_class, list_class, is_default, status, create_by, create_time, remark
+		from sys_dict_data
+    </sql>
+
+  <!--查询字典数据列表-->
+  <select id="selectDictDataList" parameterType="SysDictData" resultMap="BaseResultMap">
+    <include refid="selectDictDataVo"/>
+    <where>
+      <if test="dictType != null and dictType != ''">
+        AND dict_type = #{dictType}
+      </if>
+      <if test="dictLabel != null and dictLabel != ''">
+        AND dict_label like concat('%', #{dictLabel}, '%')
+      </if>
+      <if test="status != null and status != ''">
+        AND status = #{status}
+      </if>
+    </where>
+    order by dict_sort asc
+  </select>
+
+  <!--更新字典类型-->
+  <update id="updateDictDataType" parameterType="String">
+ 		update sys_dict_data set dict_type = #{newDictType} where dict_type = #{oldDictType}
+	</update>
+
+  <!--查询字典类型数量-->
+  <select id="countDictDataByType" resultType="Integer">
+	    select count(1) from sys_dict_data where dict_type=#{dictType}
+  </select>
+
+  <!--批量删除字典数据信息-->
+  <delete id="deleteDictDataByIds" parameterType="Long">
+    delete from sys_dict_data where dict_code in
+    <foreach collection="array" item="dictCode" open="(" separator="," close=")">
+      #{dictCode}
+    </foreach>
+  </delete>
+</mapper>

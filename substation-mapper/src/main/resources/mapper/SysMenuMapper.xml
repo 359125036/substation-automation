@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.substation.mapper.SysMenuMapper" >
+  <resultMap id="BaseResultMap" type="com.substation.entity.system.SysMenu" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="menu_id" property="menuId" jdbcType="BIGINT" />
+    <result column="menu_name" property="menuName" jdbcType="VARCHAR" />
+    <result column="parent_id" property="parentId" jdbcType="BIGINT" />
+    <result column="order_num" property="orderNum" jdbcType="INTEGER" />
+    <result column="path" property="path" jdbcType="VARCHAR" />
+    <result column="component" property="component" jdbcType="VARCHAR" />
+    <result column="is_frame" property="isFrame" jdbcType="INTEGER" />
+    <result column="menu_type" property="menuType" jdbcType="CHAR" />
+    <result column="visible" property="visible" jdbcType="CHAR" />
+    <result column="status" property="status" jdbcType="CHAR" />
+    <result column="perms" property="perms" jdbcType="VARCHAR" />
+    <result column="icon" property="icon" jdbcType="VARCHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_by" property="updateBy" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <resultMap type="SysMenu" id="SysMenuResult">
+    <id     property="menuId"         column="menu_id"        />
+    <result property="menuName"       column="menu_name"      />
+    <result property="parentName"     column="parent_name"    />
+    <result property="parentId"       column="parent_id"      />
+    <result property="orderNum"       column="order_num"      />
+    <result property="path"           column="path"           />
+    <result property="component"      column="component"      />
+    <result property="isFrame"        column="is_frame"       />
+    <result property="menuType"       column="menu_type"      />
+    <result property="visible"        column="visible"        />
+    <result property="status"         column="status"         />
+    <result property="perms"          column="perms"          />
+    <result property="icon"           column="icon"           />
+    <result property="createBy"       column="create_by"      />
+    <result property="createTime"     column="create_time"    />
+    <result property="updateTime"     column="update_time"    />
+    <result property="updateBy"       column="update_by"      />
+    <result property="remark"         column="remark"         />
+  </resultMap>
+
+  <sql id="selectMenuVo">
+        select menu_id, menu_name, parent_id, order_num, path, component, is_frame, menu_type, visible, status, ifnull(perms,'') as perms, icon, create_time
+		from sys_menu
+    </sql>
+
+  <!--根据用户id查询菜单权限-->
+  <select id="selectMenuPermsByUserId" parameterType="Long" resultType="String">
+    select distinct m.perms
+    from sys_menu m
+         left join sys_role_menu rm on m.menu_id = rm.menu_id
+         left join sys_user_role ur on rm.role_id = ur.role_id
+         left join sys_role r on r.role_id = ur.role_id
+    where m.status = '0' and r.status = '0' and ur.user_id = #{userId}
+  </select>
+
+    <!--查询所以菜单-->
+  <select id="selectMenuTreeAll" resultMap="BaseResultMap">
+    select distinct m.menu_id, m.parent_id, m.menu_name, m.path, m.component, m.visible, m.status, ifnull(m.perms,'') as perms, m.is_frame, m.menu_type, m.icon, m.order_num, m.create_time
+    from sys_menu m where m.menu_type in ('M', 'C') and m.status = 0
+    order by m.parent_id, m.order_num
+  </select>
+
+    <!--根据查询菜单列表-->
+  <select id="selectMenuTreeByUserId" parameterType="Long" resultMap="BaseResultMap">
+    select distinct m.menu_id, m.parent_id, m.menu_name, m.path, m.component, m.visible, m.status, ifnull(m.perms,'') as perms, m.is_frame, m.menu_type, m.icon, m.order_num, m.create_time
+    from sys_menu m
+         left join sys_role_menu rm on m.menu_id = rm.menu_id
+         left join sys_user_role ur on rm.role_id = ur.role_id
+         left join sys_role ro on ur.role_id = ro.role_id
+         left join sys_user u on ur.user_id = u.user_id
+    where u.user_id = #{userId} and m.menu_type in ('M', 'C') and m.status = 0  AND ro.status = 0
+    order by m.parent_id, m.order_num
+  </select>
+
+
+  <select id="selectMenuListByUserId" parameterType="SysMenu" resultMap="SysMenuResult">
+    select distinct m.menu_id, m.parent_id, m.menu_name, m.path, m.component, m.visible, m.status, ifnull(m.perms,'') as perms, m.is_frame, m.menu_type, m.icon, m.order_num, m.create_time
+    from sys_menu m
+    left join sys_role_menu rm on m.menu_id = rm.menu_id
+    left join sys_user_role ur on rm.role_id = ur.role_id
+    left join sys_role ro on ur.role_id = ro.role_id
+    where ur.user_id = #{paramsMap.userId}
+    <if test="paramsMap.menu.menuName != null and paramsMap.menu.menuName != ''">
+      AND menu_name like concat('%', #{paramsMap.menu.menuName}, '%')
+    </if>
+    <if test="paramsMap.menu.visible != null and paramsMap.menu.visible != ''">
+      AND visible = #{paramsMap.menu.visible}
+    </if>
+    <if test="paramsMap.menu.status != null and paramsMap.menu.status != ''">
+      AND status = #{paramsMap.menu.status}
+    </if>
+    order by m.parent_id, m.order_num
+  </select>
+
+
+  <!--查询菜单名称是否唯一-->
+  <select id="checkMenuNameUnique" parameterType="SysMenu" resultMap="SysMenuResult">
+    <include refid="selectMenuVo"/>
+    where menu_name=#{menuName} and parent_id = #{parentId}
+  </select>
+
+  <!--查询菜单是否存在子菜单-->
+  <select id="hasChildByMenuId" resultType="Integer">
+	    select count(1) from sys_menu where parent_id = #{menuId}
+	</select>
+
+  <!--根据角色id获取菜单列表-->
+  <select id="selectMenuListByRoleId" parameterType="Long" resultType="Integer">
+		select m.menu_id, m.parent_id
+		from sys_menu m
+            left join sys_role_menu rm on m.menu_id = rm.menu_id
+        where rm.role_id = #{roleId}
+        	and m.menu_id not in (select m.parent_id from sys_menu m inner join sys_role_menu rm on m.menu_id = rm.menu_id and rm.role_id = #{roleId})
+		order by m.parent_id, m.order_num
+	</select>
+</mapper>

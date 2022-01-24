@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.substation.mapper.SysEquipMapper" >
+  <resultMap id="BaseResultMap" type="com.substation.entity.system.SysEquip" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="equip_id" property="equipId" jdbcType="BIGINT" />
+    <result column="parent_id" property="parentId" jdbcType="BIGINT" />
+    <result column="dept_id" property="deptId" jdbcType="BIGINT" />
+    <result column="ancestors" property="ancestors" jdbcType="VARCHAR" />
+    <result column="equip_name" property="equipName" jdbcType="VARCHAR" />
+    <result column="order_num" property="orderNum" jdbcType="INTEGER" />
+    <result column="code" property="code" jdbcType="VARCHAR" />
+    <result column="leader" property="leader" jdbcType="VARCHAR" />
+    <result column="phone" property="phone" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="CHAR" />
+    <result column="del_flag" property="delFlag" jdbcType="CHAR" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="update_by" property="updateBy" jdbcType="VARCHAR" />
+    <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+
+  <sql id="selectEquipVo">
+        select d.equip_id, d.parent_id, d.ancestors,d.dept_id, d.equip_name, d.order_num,d.code, d.leader, d.phone, d.status, d.del_flag, d.create_by, d.create_time
+        from sys_equip d
+    </sql>
+
+  <!--查询设备列表-->
+  <select id="selectEquipList" parameterType="SysEquipDto" resultMap="BaseResultMap">
+    <include refid="selectEquipVo"/>
+    where d.del_flag = '0'
+    <if test="parentId != null and parentId != 0">
+      AND parent_id = #{parentId}
+    </if>
+    <if test="equipName != null and equipName != ''">
+      AND equip_name like concat('%', #{equipName}, '%')
+    </if>
+    <if test="status != null and status != ''">
+      AND status = #{status}
+    </if>
+    <if test="beginTime != null and beginTime != ''"><!-- 开始时间检索 -->
+      AND date_format(create_time,'%y%m%d') &gt;= date_format(#{beginTime},'%y%m%d')
+    </if>
+    <if test="endTime != null and endTime != ''"><!-- 结束时间检索 -->
+      AND date_format(create_time,'%y%m%d') &lt;= date_format(#{endTime},'%y%m%d')
+    </if>
+    order by d.parent_id, d.order_num
+  </select>
+
+
+  <!--更新设备id查询子集-->
+  <select id="selectChildrenEquipById" parameterType="Long" resultMap="BaseResultMap">
+		select * from sys_equip where find_in_set(#{equipId}, ancestors)
+	</select>
+
+  <!--更新子设备-->
+  <update id="updateEquipChildren" parameterType="java.util.List">
+    update sys_equip set ancestors =
+    <foreach collection="equips" item="item" index="index"
+             separator=" " open="case equip_id" close="end">
+      when #{item.equipId} then #{item.ancestors}
+    </foreach>
+    where equip_id in
+    <foreach collection="depts" item="item" index="index"
+             separator="," open="(" close=")">
+      #{item.equipId}
+    </foreach>
+  </update>
+
+
+  <!--更新设备状态-->
+  <update id="updateEquipStatus" parameterType="SysEquip">
+    update sys_equip
+    <set>
+      <if test="status != null and status != ''">status = #{status},</if>
+      <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+      update_time = sysdate()
+    </set>
+    where equip_id in (${ancestors})
+  </update>
+
+</mapper>
