@@ -1,0 +1,4 @@
+#NOTE: This is a Maven Resolver internal implementation file, its format can be changed without prior notice.
+#Mon Jan 24 14:33:33 CST 2022
+substation-api-1.0-SNAPSHOT.jar>=
+substation-api-1.0-SNAPSHOT.pom>=
