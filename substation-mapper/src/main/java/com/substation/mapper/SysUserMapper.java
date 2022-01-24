@@ -1,8 +1,8 @@
 package com.substation.mapper;
 
 import com.substation.entity.dto.SysUserDto;
-import com.substation.my.mapper.MyMapper;
 import com.substation.entity.system.SysUser;
+import com.substation.my.mapper.MyMapper;
 
 import java.util.List;
 
