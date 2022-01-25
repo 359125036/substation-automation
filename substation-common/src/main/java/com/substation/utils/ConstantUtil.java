@@ -92,4 +92,15 @@ public class ConstantUtil {
     public static final  String LOGIN_SUCCESS="登录成功";
 
     public static final  String LOGIN_OUT_SUCCESS="登出成功";
+
+    //历史视频存放本地目录
+    public static final String HISTORY_VIDEO_FILE_PATH="HISTORY_VIDEO";
+
+    //抓拍图片存放本地目录
+    public static final String PHOTO_CATALOGUE="抓拍图片";
+
+    //上传图片存放位置
+    public static final String UPLOAD_PATH="youdi/uploadPath/avatar/";
+
+    public static final String BASE64_IMG="data:image/png;base64,";
 }

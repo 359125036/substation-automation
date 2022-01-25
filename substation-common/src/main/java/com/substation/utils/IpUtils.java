@@ -6,7 +6,7 @@ import java.net.UnknownHostException;
 
 /**
  * 获取IP方法
- * 
+ *
  * @author zx
  */
 public class IpUtils
@@ -87,7 +87,7 @@ public class IpUtils
 
     /**
      * 将IPv4地址转换成字节
-     * 
+     *
      * @param text IPv4地址
      * @return byte 字节
      */
@@ -167,8 +167,15 @@ public class IpUtils
         return bytes;
     }
 
-    public static String getHostIp()
-    {
+    /**
+     * @Method getHostIp
+     * @Author zhengxin
+     * @Description 获取本机ip
+     * @Return java.lang.String
+     * @Date 2021/4/20 15:05
+     * @Version  1.0
+     */
+    public static String getHostIp() {
         try
         {
             return InetAddress.getLocalHost().getHostAddress();
@@ -189,5 +196,32 @@ public class IpUtils
         {
         }
         return "未知";
+    }
+
+    /**
+     * @Title: isTrueIp
+     * @Description:接口参数ip格式校验
+     * @param ip
+     * @return boolean
+     **/
+    public static boolean isTrueIp(String ip) {
+        return ip.matches("([1-9]|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])(\\.(\\d|[1-9]\\d|1\\d{2}|2[0-4]\\d|25[0-5])){3}");
+    }
+
+    /**
+     * @Title: IpConvert
+     * @Description:域名转ip
+     * @param domainName
+     * @return ip
+     **/
+    public static String IpConvert(String domainName) {
+        String ip = domainName;
+        try {
+            ip = InetAddress.getByName(domainName).getHostAddress();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            return domainName;
+        }
+        return ip;
     }
 }

@@ -26,7 +26,7 @@
     <result column="remark" property="remark" jdbcType="VARCHAR" />
   </resultMap>
 
-  <resultMap type="SysUser" id="SysUserResult">
+  <resultMap type="com.substation.entity.system.SysUser" id="SysUserResult">
     <id     property="userId"       column="user_id"      />
     <result property="deptId"       column="dept_id"      />
     <result property="userName"     column="user_name"    />
@@ -50,7 +50,7 @@
   </resultMap>
 
 
-  <select id="selectUserList" parameterType="SysUser" resultMap="SysUserResult">
+  <select id="selectUserList" parameterType="com.substation.entity.system.SysUser" resultMap="SysUserResult">
     select u.user_id, u.dept_id, u.nick_name, u.user_name, u.email, u.avatar, u.phone_number, u.password, u.sex, u.status, u.del_flag, u.login_ip, u.login_date, u.create_by, u.create_time, u.remark, d.dept_name, d.leader from sys_user u
     left join sys_dept d on u.dept_id = d.dept_id
     where u.del_flag = '0'
